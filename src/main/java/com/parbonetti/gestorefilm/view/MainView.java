@@ -54,10 +54,7 @@ public class MainView extends JFrame {
         saveButton = new JButton("Salva Collezione");
         loadButton = new JButton("Carica Collezione");
 
-        // Inizializza FilterPanel (lo creeremo dopo)
-        //filterPanel = new FilterPanel();
-        filterPanel = null;
-        // Inizializza ComboBox formato
+        filterPanel = new FilterPanel();
         formatComboBox = new JComboBox<>(new String[]{"JSON", "CSV"});
         formatComboBox.setSelectedItem("JSON");
     }
@@ -68,7 +65,7 @@ public class MainView extends JFrame {
         // Panel superiore - Filtri
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
-        //topPanel.add(filterPanel, BorderLayout.CENTER);
+        topPanel.add(filterPanel, BorderLayout.CENTER);
         add(topPanel, BorderLayout.NORTH);
 
         // Centro - Tabella con scroll

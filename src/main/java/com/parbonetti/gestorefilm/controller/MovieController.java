@@ -49,7 +49,24 @@ public class MovieController {
         view.getFilterPanel().getClearFilterButton().addActionListener(e -> handleClearFilters());
 
         // Ricerca real-time (opzionale - ogni tasto premuto)
-        view.getFilterPanel().getSearchField().addActionListener(e -> handleApplyFilters());
+        view.getFilterPanel().getSearchField().getDocument().addDocumentListener(
+                new javax.swing.event.DocumentListener() {
+                    @Override
+                    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                        handleApplyFilters();
+                    }
+
+                    @Override
+                    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                        handleApplyFilters();
+                    }
+
+                    @Override
+                    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                        handleApplyFilters();
+                    }
+                }
+        );
     }
 
     private void refreshView() {

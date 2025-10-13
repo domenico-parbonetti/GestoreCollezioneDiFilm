@@ -130,7 +130,8 @@ public class MainView extends JFrame {
     public String getSelectedMovieId() {
         int selectedRow = movieTable.getSelectedRow();
         if (selectedRow >= 0) {
-            return (String) tableModel.getValueAt(selectedRow, 0); // ID è colonna 0
+            int modelRow = movieTable.convertRowIndexToModel(selectedRow);
+            return (String) tableModel.getValueAt(modelRow, 0);
         }
         return null;
     }

@@ -39,7 +39,11 @@ public class MainView extends JFrame {
         };
         movieTable = new JTable(tableModel);
         movieTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        movieTable.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
+        movieTable.setAutoCreateRowSorter(true);
+
+        movieTable.getColumnModel().getColumn(0).setMinWidth(0);        // ← AGGIUNGI
+        movieTable.getColumnModel().getColumn(0).setMaxWidth(0);        // ← AGGIUNGI
+        movieTable.getColumnModel().getColumn(0).setPreferredWidth(0);  // ← MODIFICA (era 50)
         movieTable.getColumnModel().getColumn(1).setPreferredWidth(200); // Titolo
         movieTable.getColumnModel().getColumn(2).setPreferredWidth(150); // Regista
         movieTable.getColumnModel().getColumn(3).setPreferredWidth(60);  // Anno

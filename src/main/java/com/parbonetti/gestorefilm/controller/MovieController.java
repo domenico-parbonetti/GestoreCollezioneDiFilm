@@ -16,6 +16,7 @@ public class MovieController {
     private final MainView view;
     private final MovieCollection collection;
     private String currentFilepath = "movies"; // default filename (senza estensione)
+    private static final String AUTO_SAVE_FILE = "movies_autosave";
 
     public MovieController(MainView view) {
         this.view = view;
@@ -24,11 +25,36 @@ public class MovieController {
         // Imposta strategia di default (JSON)
         collection.setPersistenceStrategy(new JSONPersistence());
 
+        loadAutoSave();
+
         // Registra listener per gli eventi della view
         registerListeners();
 
         // Aggiorna la view iniziale
         refreshView();
+    }
+
+    private void loadAutoSave() {
+        try {
+            java.io.File autoSaveFile = new java.io.File(AUTO_SAVE_FILE + ".json");
+            if (autoSaveFile.exists()) {
+                collection.load(AUTO_SAVE_FILE);
+                System.out.println("Auto-save caricato: " + collection.getMovieCount() + " film");
+            } else {
+                System.out.println("Nessun auto-save trovato (prima esecuzione)");
+            }
+        } catch (Exception e) {
+            System.err.println("Errore caricamento auto-save: " + e.getMessage());
+        }
+    }
+
+    private void autoSave() {
+        try {
+            collection.save(AUTO_SAVE_FILE);
+            System.out.println("Auto-save eseguito: " + collection.getMovieCount() + " film salvati");
+        } catch (Exception e) {
+            System.err.println("Errore auto-save: " + e.getMessage());
+        }
     }
 
     private void registerListeners() {
@@ -49,7 +75,24 @@ public class MovieController {
         view.getFilterPanel().getClearFilterButton().addActionListener(e -> handleClearFilters());
 
         // Ricerca real-time (opzionale - ogni tasto premuto)
-        view.getFilterPanel().getSearchField().addActionListener(e -> handleApplyFilters());
+        view.getFilterPanel().getSearchField().getDocument().addDocumentListener(
+                new javax.swing.event.DocumentListener() {
+                    @Override
+                    public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                        handleApplyFilters();
+                    }
+
+                    @Override
+                    public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                        handleApplyFilters();
+                    }
+
+                    @Override
+                    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                        handleApplyFilters();
+                    }
+                }
+        );
     }
 
     private void refreshView() {
@@ -72,6 +115,7 @@ public class MovieController {
         if (newMovie != null) {
             boolean success = collection.addMovie(newMovie);
             if (success) {
+                autoSave();
                 refreshView();
                 view.showMessage("Film aggiunto con successo!");
             } else {
@@ -108,6 +152,7 @@ public class MovieController {
         if (editedMovie != null) {
             boolean success = collection.updateMovie(editedMovie);
             if (success) {
+                autoSave();
                 refreshView();
                 view.showMessage("Film modificato con successo!");
             } else {
@@ -140,6 +185,7 @@ public class MovieController {
         if (confirmed) {
             boolean success = collection.removeMovie(selectedId);
             if (success) {
+                autoSave();
                 refreshView();
                 view.showMessage("Film eliminato con successo!");
             } else {

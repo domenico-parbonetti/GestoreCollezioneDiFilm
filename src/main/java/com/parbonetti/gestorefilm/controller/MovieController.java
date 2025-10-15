@@ -74,7 +74,6 @@ public class MovieController implements CollectionObserver {
         view.getFormatComboBox().addActionListener(e -> handleFormatChange());
 
         // Filtri
-        view.getFilterPanel().getApplyFilterButton().addActionListener(e -> handleApplyFilters());
         view.getFilterPanel().getClearFilterButton().addActionListener(e -> handleClearFilters());
 
         // Ricerca real-time (opzionale - ogni tasto premuto)
@@ -96,6 +95,9 @@ public class MovieController implements CollectionObserver {
                     }
                 }
         );
+        view.getFilterPanel().getGenreComboBox().addActionListener(e -> handleApplyFilters());
+        view.getFilterPanel().getStatusComboBox().addActionListener(e -> handleApplyFilters());
+        view.getFilterPanel().getRatingComboBox().addActionListener(e -> handleApplyFilters());
     }
 
     private void refreshView() {
@@ -289,17 +291,18 @@ public class MovieController implements CollectionObserver {
         String searchText = view.getFilterPanel().getSearchText();
         String selectedGenre = view.getFilterPanel().getSelectedGenre();
         ViewingStatus selectedStatus = view.getFilterPanel().getSelectedStatusEnum();
+        int minRating = view.getFilterPanel().getSelectedMinRating();
 
         // Parti da tutti i film
         List<Movie> filteredMovies = collection.getAllMovies();
 
         // Applica ricerca per titolo (se presente)
-        if (!searchText.isEmpty()) {
+        if (searchText != null && !searchText.isEmpty()) {
             filteredMovies = collection.searchByTitleOrAuthor(searchText);
         }
 
         // Applica filtro genere (se non "Tutti")
-        if (!selectedGenre.equals("Tutti")) {
+        if (selectedGenre != null && !selectedGenre.equals("Tutti")) {
             List<Movie> genreFiltered = collection.filterByGenere(selectedGenre);
             filteredMovies.retainAll(genreFiltered); // intersezione
         }
@@ -308,6 +311,11 @@ public class MovieController implements CollectionObserver {
         if (selectedStatus != null) {
             List<Movie> statusFiltered = collection.filterByStatus(selectedStatus);
             filteredMovies.retainAll(statusFiltered); // intersezione
+        }
+
+        if (minRating > 0) {
+            List<Movie> ratingFiltered = collection.filterByRating(minRating);
+            filteredMovies.retainAll(ratingFiltered);
         }
 
         // Aggiorna view con risultati filtrati

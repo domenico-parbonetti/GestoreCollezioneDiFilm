@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MovieCollection {
-    private static MovieCollection instance;
+    private static MovieCollection INSTANCE = null;
 
     private List<Movie> movies;
     private PersistenceStrategy persistenceStrategy;
@@ -14,11 +14,15 @@ public class MovieCollection {
         this.movies = new ArrayList<>();
     }
 
-    public static MovieCollection getInstance() {
-        if (instance == null) {
-            instance = new MovieCollection();
+    public static synchronized MovieCollection getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new MovieCollection();
         }
-        return instance;
+        return INSTANCE;
+    }
+
+    static synchronized void resetForTesting() {
+        INSTANCE = null;
     }
 
 

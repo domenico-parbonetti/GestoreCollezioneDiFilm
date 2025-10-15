@@ -124,12 +124,6 @@ public class FilterPanel extends JPanel {
         statusComboBox.setSelectedItem("Tutti");
     }
 
-    public boolean hasActiveFilters() {
-        return !getSearchText().isEmpty()
-                || !getSelectedGenre().equals("Tutti")
-                || !getSelectedStatus().equals("Tutti");
-    }
-
     public void updateGenres(java.util.List<String> genres) {
         String currentSelection = getSelectedGenre();
         genreComboBox.removeAllItems();

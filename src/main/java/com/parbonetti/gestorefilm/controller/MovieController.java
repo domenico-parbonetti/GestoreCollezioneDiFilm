@@ -1,5 +1,6 @@
 package com.parbonetti.gestorefilm.controller;
 
+import com.parbonetti.gestorefilm.model.CollectionObserver;
 import com.parbonetti.gestorefilm.model.Movie;
 import com.parbonetti.gestorefilm.model.MovieCollection;
 import com.parbonetti.gestorefilm.model.ViewingStatus;
@@ -12,7 +13,7 @@ import com.parbonetti.gestorefilm.view.MovieFormDialog;
 import javax.swing.*;
 import java.util.List;
 
-public class MovieController {
+public class MovieController implements CollectionObserver {
     private final MainView view;
     private final MovieCollection collection;
     private String currentFilepath = "movies"; // default filename (senza estensione)
@@ -24,6 +25,8 @@ public class MovieController {
 
         // Imposta strategia di default (JSON)
         collection.setPersistenceStrategy(new JSONPersistence());
+
+        collection.addObserver(this);
 
         loadAutoSave();
 
@@ -334,4 +337,30 @@ public class MovieController {
 
         System.out.println("Strategia di persistenza cambiata in: " + selectedFormat);
     }
+
+    @Override
+    public void onMovieAdded(Movie movie) {
+        System.out.println("[Observer] Film aggiunto: " + movie.getTitolo());
+        refreshView();
+    }
+
+    @Override
+    public void onMovieRemoved(Movie movie) {
+        System.out.println("[Observer] Film rimosso: " + movie.getTitolo());
+        refreshView();
+    }
+
+    @Override
+    public void onMovieUpdated(Movie movie) {
+        System.out.println("[Observer] Film aggiornato: " + movie.getTitolo());
+        refreshView();
+    }
+
+    @Override
+    public void onCollectionLoaded() {
+        System.out.println("[Observer] Collezione caricata: " +
+                collection.getMovieCount() + " movies");
+        refreshView();
+    }
+
 }

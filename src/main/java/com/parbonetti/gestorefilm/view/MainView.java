@@ -120,7 +120,7 @@ public class MainView extends JFrame {
                         movie.getRegista(),
                         movie.getAnnoUscita(),
                         movie.getGenere(),
-                        movie.getValutazione() + "/5",
+                        "★".repeat(movie.getValutazione()),
                         movie.getStatoVisione().getDisplayName()
                 };
                 tableModel.addRow(row);

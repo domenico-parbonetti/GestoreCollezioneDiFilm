@@ -15,6 +15,7 @@ public class MainView extends JFrame {
     private JButton editButton;
     private JButton deleteButton;
     private JButton saveButton;
+    private JButton undoButton;
     private JButton loadButton;
     private FilterPanel filterPanel;
     private JComboBox<String> formatComboBox;
@@ -57,6 +58,9 @@ public class MainView extends JFrame {
         deleteButton = new JButton("Elimina");
         saveButton = new JButton("Salva Collezione");
         loadButton = new JButton("Carica Collezione");
+        undoButton = new JButton("Annulla (Ctrl+Z)");
+        undoButton.setEnabled(false);
+        undoButton.setToolTipText("Annulla l'ultima operazione");
 
         filterPanel = new FilterPanel();
         formatComboBox = new JComboBox<>(new String[]{"JSON", "CSV"});
@@ -86,6 +90,8 @@ public class MainView extends JFrame {
         actionPanel.add(addButton);
         actionPanel.add(editButton);
         actionPanel.add(deleteButton);
+        actionPanel.add(new JSeparator(SwingConstants.VERTICAL));  // Separatore visivo
+        actionPanel.add(undoButton);
         bottomPanel.add(actionPanel, BorderLayout.WEST);
 
         // Formato e salvataggio
@@ -162,6 +168,9 @@ public class MainView extends JFrame {
 
     public JButton getDeleteButton() {
         return deleteButton;
+    }
+    public JButton getUndoButton() {
+        return undoButton;
     }
 
     public JButton getSaveButton() {

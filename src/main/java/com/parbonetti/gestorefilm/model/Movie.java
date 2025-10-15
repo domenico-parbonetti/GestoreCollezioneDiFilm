@@ -3,7 +3,7 @@ package com.parbonetti.gestorefilm.model;
 import java.util.UUID;
 
 public class Movie {
-    private final String id;
+    private String id;
     private String titolo;
     private String regista;
     private int annoUscita;
@@ -107,5 +107,15 @@ public class Movie {
 
     public Movie() {
         this.id = UUID.randomUUID().toString();
+    }
+
+    public Movie(Movie other) {  // ← AGGIUNGI QUESTO
+        this.id = other.id;  // Mantieni stesso ID!
+        this.titolo = other.titolo;
+        this.regista = other.regista;
+        this.annoUscita = other.annoUscita;
+        this.genere = other.genere;
+        this.valutazione = other.valutazione;
+        this.statoVisione = other.statoVisione;
     }
 }

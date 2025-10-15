@@ -1,5 +1,9 @@
 package com.parbonetti.gestorefilm.controller;
 
+import com.parbonetti.gestorefilm.commands.AddMovieCommand;
+import com.parbonetti.gestorefilm.commands.Command;
+import com.parbonetti.gestorefilm.commands.DeleteMovieCommand;
+import com.parbonetti.gestorefilm.commands.EditMovieCommand;
 import com.parbonetti.gestorefilm.model.CollectionObserver;
 import com.parbonetti.gestorefilm.model.Movie;
 import com.parbonetti.gestorefilm.model.MovieCollection;
@@ -12,10 +16,13 @@ import com.parbonetti.gestorefilm.view.MovieFormDialog;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Stack;
 
 public class MovieController implements CollectionObserver {
     private final MainView view;
     private final MovieCollection collection;
+    private Stack<Command> commandHistory;
+    private static final int MAX_HISTORY_SIZE = 50;
     private String currentFilepath = "movies"; // default filename (senza estensione)
     private static final String AUTO_SAVE_FILE = "movies_autosave";
 
@@ -27,6 +34,8 @@ public class MovieController implements CollectionObserver {
         collection.setPersistenceStrategy(new JSONPersistence());
 
         collection.addObserver(this);
+
+        this.commandHistory = new Stack<>();
 
         loadAutoSave();
 
@@ -65,6 +74,7 @@ public class MovieController implements CollectionObserver {
         view.getAddButton().addActionListener(e -> handleAddMovie());
         view.getEditButton().addActionListener(e -> handleEditMovie());
         view.getDeleteButton().addActionListener(e -> handleDeleteMovie());
+        view.getUndoButton().addActionListener(e -> handleUndo());
 
         // Bottoni salvataggio
         view.getSaveButton().addActionListener(e -> handleSave());
@@ -98,6 +108,37 @@ public class MovieController implements CollectionObserver {
         view.getFilterPanel().getGenreComboBox().addActionListener(e -> handleApplyFilters());
         view.getFilterPanel().getStatusComboBox().addActionListener(e -> handleApplyFilters());
         view.getFilterPanel().getRatingComboBox().addActionListener(e -> handleApplyFilters());
+        view.getRootPane().registerKeyboardAction(
+                e -> handleUndo(),
+                KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z,
+                        java.awt.event.InputEvent.CTRL_DOWN_MASK),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+    }
+
+    private void executeCommand(Command command) {
+        command.execute();
+        commandHistory.push(command);
+        if (commandHistory.size() > MAX_HISTORY_SIZE) {
+            commandHistory.remove(0);
+        }
+        view.getUndoButton().setEnabled(true);
+        autoSave();
+        refreshView();
+    }
+
+    private void handleUndo() {
+        if (commandHistory.isEmpty()) {
+            return;
+        }
+        Command command = commandHistory.pop();
+        command.undo();
+        view.showMessage("Annullato: " + command.getDescription());
+        if (commandHistory.isEmpty()) {
+            view.getUndoButton().setEnabled(false);
+        }
+        autoSave();
+        refreshView();
     }
 
     private void refreshView() {
@@ -113,19 +154,13 @@ public class MovieController implements CollectionObserver {
         // Crea dialog in modalità INSERT
         MovieFormDialog dialog = new MovieFormDialog((JFrame) SwingUtilities.getWindowAncestor(view));
 
-        // Mostra dialog e attendi input utente
         Movie newMovie = dialog.showDialog();
 
         // Se confermato, aggiungi alla collezione
         if (newMovie != null) {
-            boolean success = collection.addMovie(newMovie);
-            if (success) {
-                autoSave();
-                refreshView();
-                view.showMessage("Film aggiunto con successo!");
-            } else {
-                view.showError("Errore nell'aggiunta del film.");
-            }
+            Command command = new AddMovieCommand(collection, newMovie);
+            executeCommand(command);
+            view.showMessage("Film aggiunto con successo! (Ctrl+Z per annullare)");
         }
     }
 
@@ -143,11 +178,13 @@ public class MovieController implements CollectionObserver {
             view.showError("Film non trovato!");
             return;
         }
+        Movie movieCopy = new Movie(movieToEdit);
+        Movie originalMovie = new Movie(movieToEdit);
 
         // Crea dialog in modalità EDIT
         MovieFormDialog dialog = new MovieFormDialog(
                 (JFrame) SwingUtilities.getWindowAncestor(view),
-                movieToEdit
+                movieCopy
         );
 
         // Mostra dialog e attendi input utente
@@ -155,47 +192,35 @@ public class MovieController implements CollectionObserver {
 
         // Se confermato, aggiorna nella collezione
         if (editedMovie != null) {
-            boolean success = collection.updateMovie(editedMovie);
-            if (success) {
-                autoSave();
-                refreshView();
-                view.showMessage("Film modificato con successo!");
-            } else {
-                view.showError("Errore nella modifica del film.");
-            }
+            Command command = new EditMovieCommand(collection, originalMovie, editedMovie);
+            executeCommand(command);
+            view.showMessage("Film modificato con successo! (Ctrl+Z per annullare)");
         }
     }
 
     private void handleDeleteMovie() {
-        // Verifica che ci sia una selezione
         String selectedId = view.getSelectedMovieId();
         if (selectedId == null) {
             view.showError("Seleziona un film da eliminare!");
             return;
         }
 
-        // Ottieni il film per mostrare il titolo nella conferma
-        Movie movieToDelete = collection.getMovie(selectedId);
-        if (movieToDelete == null) {
-            view.showError("Film non trovato!");
+        Movie movie = collection.getMovie(selectedId);
+        if (movie == null) {
             return;
         }
-
-        // Chiedi conferma
-        boolean confirmed = view.showConfirmation(
-                "Sei sicuro di voler eliminare il film:\n\"" +
-                        movieToDelete.getTitolo() + "\"?"
+        int confirm = JOptionPane.showConfirmDialog(
+                view,
+                "Eliminare '" + movie.getTitolo() + "'?\n(Puoi ripristinare con Annulla/Ctrl+Z)",
+                "Conferma eliminazione",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
         );
 
-        if (confirmed) {
-            boolean success = collection.removeMovie(selectedId);
-            if (success) {
-                autoSave();
-                refreshView();
-                view.showMessage("Film eliminato con successo!");
-            } else {
-                view.showError("Errore nell'eliminazione del film.");
-            }
+        if (confirm == JOptionPane.YES_OPTION) {
+            Command command = new DeleteMovieCommand(collection, movie);
+            executeCommand(command);
+            view.showMessage("Film eliminato con successo! (Ctrl+Z per annullare)");
         }
     }
 

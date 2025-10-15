@@ -9,10 +9,10 @@ public class EditMovieCommand implements Command {
     private final Movie oldMovie;
     private final Movie newMovie;
 
-    public EditMovieCommand(MovieCollection collection, Movie oldMovie) {
+    public EditMovieCommand(MovieCollection collection, Movie oldMovie,  Movie newMovie) {
         this.collection = collection;
         this.oldMovie = oldMovie;
-        this.newMovie = oldMovie;
+        this.newMovie = newMovie;
     }
     @Override
     public void execute() {

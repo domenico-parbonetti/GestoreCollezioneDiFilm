@@ -10,10 +10,8 @@ public class MovieCollection {
 
     private List<Movie> movies;
     private PersistenceStrategy persistenceStrategy;
-    private List<CollectionObserver> observers;
     private MovieCollection() {
         this.movies = new ArrayList<>();
-        this.observers = new ArrayList<>();
     }
 
     public static MovieCollection getInstance() {
@@ -23,60 +21,16 @@ public class MovieCollection {
         return instance;
     }
 
-    public void addObserver(CollectionObserver observer) {
-        if (observer != null && !observers.contains(observer)) {
-            observers.add(observer);
-            System.out.println("Observer registrato: " + observer.getClass().getSimpleName());
-        }
-    }
-
-    public void removeObserver(CollectionObserver observer) {
-        observers.remove(observer);
-        System.out.println("Observer rimosso: " + observer.getClass().getSimpleName());
-    }
-
-    private void notifyMovieAdded(Movie movie) {
-        for (CollectionObserver observer : observers) {
-            observer.onMovieAdded(movie);
-        }
-    }
-
-    private void notifyMovieRemoved(Movie movie) {
-        for (CollectionObserver observer : observers) {
-            observer.onMovieRemoved(movie);
-        }
-    }
-
-    private void notifyMovieUpdated(Movie movie) {
-        for (CollectionObserver observer : observers) {
-            observer.onMovieUpdated(movie);
-        }
-    }
-
-    private void notifyCollectionLoaded() {
-        for (CollectionObserver observer : observers) {
-            observer.onCollectionLoaded();
-        }
-    }
 
     public boolean addMovie(Movie movie) {
         if (movie == null) {
             return false;
         }
-        boolean result = movies.add(movie);
-        if (result) {
-            notifyMovieAdded(movie);
-        }
-        return result;
+        return movies.add(movie);
     }
 
     public boolean removeMovie(String id) {
-        Movie movieToRemove = getMovie(id);
-        boolean result = movies.removeIf(m -> m.getId().equals(id));
-        if (result && movieToRemove != null) {
-            notifyMovieRemoved(movieToRemove);
-        }
-        return result;
+        return movies.removeIf(m -> m.getId().equals(id));
     }
 
     public Movie getMovie(String id) {
@@ -95,7 +49,6 @@ public class MovieCollection {
         for (int i = 0; i < movies.size(); i++) {
             if (movies.get(i).getId().equals(uMovie.getId())) {
                 movies.set(i, uMovie);
-                notifyMovieUpdated(uMovie);
                 return true;
             }
         }
@@ -164,7 +117,6 @@ public class MovieCollection {
         List<Movie> loadedMovies = persistenceStrategy.load(filepath);
         if (loadedMovies != null) {
             this.movies = loadedMovies;
-            notifyCollectionLoaded();
         }
     }
 }

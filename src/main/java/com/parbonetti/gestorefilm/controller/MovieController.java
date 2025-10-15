@@ -4,7 +4,6 @@ import com.parbonetti.gestorefilm.commands.AddMovieCommand;
 import com.parbonetti.gestorefilm.commands.Command;
 import com.parbonetti.gestorefilm.commands.DeleteMovieCommand;
 import com.parbonetti.gestorefilm.commands.EditMovieCommand;
-import com.parbonetti.gestorefilm.model.CollectionObserver;
 import com.parbonetti.gestorefilm.model.Movie;
 import com.parbonetti.gestorefilm.model.MovieCollection;
 import com.parbonetti.gestorefilm.model.ViewingStatus;
@@ -18,7 +17,7 @@ import javax.swing.*;
 import java.util.List;
 import java.util.Stack;
 
-public class MovieController implements CollectionObserver {
+public class MovieController{
     private final MainView view;
     private final MovieCollection collection;
     private Stack<Command> commandHistory;
@@ -32,8 +31,6 @@ public class MovieController implements CollectionObserver {
 
         // Imposta strategia di default (JSON)
         collection.setPersistenceStrategy(new JSONPersistence());
-
-        collection.addObserver(this);
 
         this.commandHistory = new Stack<>();
 
@@ -370,30 +367,4 @@ public class MovieController implements CollectionObserver {
 
         System.out.println("Strategia di persistenza cambiata in: " + selectedFormat);
     }
-
-    @Override
-    public void onMovieAdded(Movie movie) {
-        System.out.println("[Observer] Film aggiunto: " + movie.getTitolo());
-        refreshView();
-    }
-
-    @Override
-    public void onMovieRemoved(Movie movie) {
-        System.out.println("[Observer] Film rimosso: " + movie.getTitolo());
-        refreshView();
-    }
-
-    @Override
-    public void onMovieUpdated(Movie movie) {
-        System.out.println("[Observer] Film aggiornato: " + movie.getTitolo());
-        refreshView();
-    }
-
-    @Override
-    public void onCollectionLoaded() {
-        System.out.println("[Observer] Collezione caricata: " +
-                collection.getMovieCount() + " movies");
-        refreshView();
-    }
-
 }

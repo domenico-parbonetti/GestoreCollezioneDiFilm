@@ -295,7 +295,7 @@ public class MovieController implements CollectionObserver {
 
         // Applica ricerca per titolo (se presente)
         if (!searchText.isEmpty()) {
-            filteredMovies = collection.searchByTitle(searchText);
+            filteredMovies = collection.searchByTitleOrAuthor(searchText);
         }
 
         // Applica filtro genere (se non "Tutti")

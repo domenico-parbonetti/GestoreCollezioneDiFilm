@@ -3,7 +3,7 @@ package com.parbonetti.gestorefilm.model;
 import java.util.UUID;
 
 public class Movie {
-    private String id;
+    private final String id;
     private String titolo;
     private String regista;
     private int annoUscita;
@@ -24,10 +24,6 @@ public class Movie {
 
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getTitolo() {

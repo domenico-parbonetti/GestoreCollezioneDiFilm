@@ -136,10 +136,6 @@ public class MainView extends JFrame {
         return null;
     }
 
-    public boolean hasSelection() {
-        return movieTable.getSelectedRow() >= 0;
-    }
-
     public void showMessage(String message) {
         JOptionPane.showMessageDialog(this, message, "Informazione",
                 JOptionPane.INFORMATION_MESSAGE);

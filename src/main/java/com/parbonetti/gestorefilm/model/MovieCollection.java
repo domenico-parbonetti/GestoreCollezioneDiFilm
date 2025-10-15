@@ -126,7 +126,7 @@ public class MovieCollection {
 
     public List<Movie> filterByRating(int minRating) {
         return movies.stream()
-                .filter(m -> m.getValutazione() >= minRating)
+                .filter(m -> m.getValutazione() == minRating)
                 .collect(Collectors.toList());
     }
 

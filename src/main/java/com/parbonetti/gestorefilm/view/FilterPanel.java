@@ -9,7 +9,7 @@ public class FilterPanel extends JPanel {
     private JTextField searchField;
     private JComboBox<String> genreComboBox;
     private JComboBox<String> statusComboBox;
-    private JButton applyFilterButton;
+    private JComboBox<String> ratingComboBox;
     private JButton clearFilterButton;
 
     public FilterPanel() {
@@ -50,8 +50,17 @@ public class FilterPanel extends JPanel {
         });
         statusComboBox.setSelectedItem("Tutti");
 
+        ratingComboBox = new JComboBox<>(new String[]{
+                "Tutte",
+                "5★ ★★★★★",
+                "4★ ★★★★",
+                "3★ ★★★",
+                "2★ ★★",
+                "1★ ★"
+        });
+        ratingComboBox.setSelectedItem("Tutte");
+
         // Bottoni
-        applyFilterButton = new JButton("Applica Filtri");
         clearFilterButton = new JButton("Pulisci");
     }
 
@@ -71,9 +80,32 @@ public class FilterPanel extends JPanel {
         add(new JLabel("Stato:"));
         add(statusComboBox);
 
+        add(new JLabel("Valutazione:"));
+        add(ratingComboBox);
+
         // Bottoni
-        add(applyFilterButton);
         add(clearFilterButton);
+    }
+
+    public int getSelectedMinRating() {
+        String selected = (String) ratingComboBox.getSelectedItem();
+
+        if (selected.equals("Tutte")) {
+            return 0;
+        }
+        return Character.getNumericValue(selected.charAt(0));
+    }
+
+    public JComboBox<String> getRatingComboBox() {
+        return ratingComboBox;
+    }
+
+    public JComboBox<String> getGenreComboBox() {
+        return genreComboBox;
+    }
+
+    public JComboBox<String> getStatusComboBox() {
+        return statusComboBox;
     }
 
     public String getSearchText() {
@@ -106,10 +138,6 @@ public class FilterPanel extends JPanel {
         return null;
     }
 
-    public JButton getApplyFilterButton() {
-        return applyFilterButton;
-    }
-
     public JButton getClearFilterButton() {
         return clearFilterButton;
     }
@@ -122,6 +150,7 @@ public class FilterPanel extends JPanel {
         searchField.setText("");
         genreComboBox.setSelectedItem("Tutti");
         statusComboBox.setSelectedItem("Tutti");
+        ratingComboBox.setSelectedItem("Tutte");
     }
 
     public void updateGenres(java.util.List<String> genres) {

@@ -175,13 +175,13 @@ public class MovieController{
             view.showError("Film non trovato!");
             return;
         }
-        Movie movieCopy = new Movie(movieToEdit);
-        Movie originalMovie = new Movie(movieToEdit);
+
+        Movie.Memento beforeState = movieToEdit.createMemento();
 
         // Crea dialog in modalità EDIT
         MovieFormDialog dialog = new MovieFormDialog(
                 (JFrame) SwingUtilities.getWindowAncestor(view),
-                movieCopy
+                movieToEdit
         );
 
         // Mostra dialog e attendi input utente
@@ -189,7 +189,7 @@ public class MovieController{
 
         // Se confermato, aggiorna nella collezione
         if (editedMovie != null) {
-            Command command = new EditMovieCommand(collection, originalMovie, editedMovie);
+            Command command = new EditMovieCommand(collection, movieToEdit, beforeState);
             executeCommand(command);
             view.showMessage("Film modificato con successo! (Ctrl+Z per annullare)");
         }

@@ -3,7 +3,7 @@ package com.parbonetti.gestorefilm.model;
 import java.util.UUID;
 
 public class Movie {
-    private String id;
+    private final String id;
     private String titolo;
     private String regista;
     private int annoUscita;
@@ -109,8 +109,8 @@ public class Movie {
         this.id = UUID.randomUUID().toString();
     }
 
-    public Movie(Movie other) {  // ← AGGIUNGI QUESTO
-        this.id = other.id;  // Mantieni stesso ID!
+    public Movie(Movie other) {
+        this.id = other.id;
         this.titolo = other.titolo;
         this.regista = other.regista;
         this.annoUscita = other.annoUscita;
@@ -118,4 +118,49 @@ public class Movie {
         this.valutazione = other.valutazione;
         this.statoVisione = other.statoVisione;
     }
+
+    public static class Memento {
+        private final String id;
+        private final String titolo;
+        private final String regista;
+        private final int annoUscita;
+        private final String genere;
+        private final int valutazione;
+        private final ViewingStatus statoVisione;
+
+        private Memento(Movie movie) {
+            this.id = movie.id;
+            this.titolo = movie.titolo;
+            this.regista = movie.regista;
+            this.annoUscita = movie.annoUscita;
+            this.genere = movie.genere;
+            this.valutazione = movie.valutazione;
+            this.statoVisione = movie.statoVisione;
+        }
+    }
+
+    public Memento createMemento() {
+        return new Memento(this);
+    }
+
+    public void restoreFromMemento(Memento memento) {
+        if (memento == null) {
+            throw new IllegalArgumentException("Memento non può essere null");
+        }
+
+        if (!this.id.equals(memento.id)) {
+            throw new IllegalArgumentException(
+                    "Non posso ripristinare il memento: ID diversi (film: " + this.id +
+                            ", memento: " + memento.id + ")"
+            );
+        }
+
+        this.titolo = memento.titolo;
+        this.regista = memento.regista;
+        this.annoUscita = memento.annoUscita;
+        this.genere = memento.genere;
+        this.valutazione = memento.valutazione;
+        this.statoVisione = memento.statoVisione;
+    }
+
 }

@@ -193,4 +193,69 @@ public class MainView extends JFrame {
         setVisible(true);
     }
 
+    public String showSaveDialog(String format, String defaultFilename) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Salva Collezione");
+
+        // Set filter based on format
+        if (format.equals("JSON")) {
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "File JSON (*.json)", "json"));
+        } else if (format.equals("CSV")) {
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "File CSV (*.csv)", "csv"));
+        }
+
+        fileChooser.setSelectedFile(new java.io.File(defaultFilename));
+
+        int result = fileChooser.showSaveDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            String filepath = fileChooser.getSelectedFile().getAbsolutePath();
+
+            if (filepath.endsWith(".json") || filepath.endsWith(".csv")) {
+                filepath = filepath.substring(0, filepath.lastIndexOf('.'));
+            }
+
+            return filepath;
+        }
+
+        return null;
+    }
+
+    public String showLoadDialog(String format) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Carica Collezione");
+
+        // Set filter based on format
+        if (format.equals("JSON")) {
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "File JSON (*.json)", "json"));
+        } else if (format.equals("CSV")) {
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                    "File CSV (*.csv)", "csv"));
+        }
+
+        int result = fileChooser.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            String filepath = fileChooser.getSelectedFile().getAbsolutePath();
+
+            if (filepath.endsWith(".json") || filepath.endsWith(".csv")) {
+                filepath = filepath.substring(0, filepath.lastIndexOf('.'));
+            }
+
+            return filepath;
+        }
+
+        return null;
+    }
+
+    public String getSelectedFormat() {
+        return (String) formatComboBox.getSelectedItem();
+    }
+
+    public JFrame getParentFrame() {
+        return (JFrame) SwingUtilities.getWindowAncestor(this);
+    }
 }

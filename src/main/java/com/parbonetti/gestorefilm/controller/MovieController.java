@@ -1,9 +1,7 @@
 package com.parbonetti.gestorefilm.controller;
 
-import com.parbonetti.gestorefilm.commands.AddMovieCommand;
-import com.parbonetti.gestorefilm.commands.Command;
-import com.parbonetti.gestorefilm.commands.DeleteMovieCommand;
-import com.parbonetti.gestorefilm.commands.EditMovieCommand;
+import com.parbonetti.gestorefilm.AppConfiguration;
+import com.parbonetti.gestorefilm.commands.*;
 import com.parbonetti.gestorefilm.model.Movie;
 import com.parbonetti.gestorefilm.model.MovieCollection;
 import com.parbonetti.gestorefilm.model.ViewingStatus;
@@ -12,18 +10,14 @@ import com.parbonetti.gestorefilm.persistence.JSONPersistence;
 import com.parbonetti.gestorefilm.persistence.PersistenceStrategy;
 import com.parbonetti.gestorefilm.view.MainView;
 import com.parbonetti.gestorefilm.view.MovieFormDialog;
-
 import javax.swing.*;
 import java.util.List;
-import java.util.Stack;
 
 public class MovieController{
     private final MainView view;
     private final MovieCollection collection;
-    private Stack<Command> commandHistory;
-    private static final int MAX_HISTORY_SIZE = 50;
-    private String currentFilepath = "movies"; // default filename (senza estensione)
-    private static final String AUTO_SAVE_FILE = "movies_autosave";
+    private final CommandManager commandManager;;
+    private String currentFilepath = AppConfiguration.DEFAULT_FILENAME;
 
     public MovieController(MainView view) {
         this.view = view;
@@ -32,22 +26,18 @@ public class MovieController{
         // Imposta strategia di default (JSON)
         collection.setPersistenceStrategy(new JSONPersistence());
 
-        this.commandHistory = new Stack<>();
+        this.commandManager = new CommandManager(AppConfiguration.MAX_COMMAND_HISTORY_SIZE);
 
         loadAutoSave();
-
-        // Registra listener per gli eventi della view
         registerListeners();
-
-        // Aggiorna la view iniziale
         refreshView();
     }
 
     private void loadAutoSave() {
         try {
-            java.io.File autoSaveFile = new java.io.File(AUTO_SAVE_FILE + ".json");
+            java.io.File autoSaveFile = new java.io.File(AppConfiguration.AUTO_SAVE_FILENAME + ".json");
             if (autoSaveFile.exists()) {
-                collection.load(AUTO_SAVE_FILE);
+                collection.load(AppConfiguration.AUTO_SAVE_FILENAME);
                 System.out.println("Auto-save caricato: " + collection.getMovieCount() + " film");
             } else {
                 System.out.println("Nessun auto-save trovato (prima esecuzione)");
@@ -59,7 +49,7 @@ public class MovieController{
 
     private void autoSave() {
         try {
-            collection.save(AUTO_SAVE_FILE);
+            collection.save(AppConfiguration.AUTO_SAVE_FILENAME);
             System.out.println("Auto-save eseguito: " + collection.getMovieCount() + " film salvati");
         } catch (Exception e) {
             System.err.println("Errore auto-save: " + e.getMessage());
@@ -80,10 +70,8 @@ public class MovieController{
         // Cambio formato persistenza
         view.getFormatComboBox().addActionListener(e -> handleFormatChange());
 
-        // Filtri
         view.getFilterPanel().getClearFilterButton().addActionListener(e -> handleClearFilters());
 
-        // Ricerca real-time (opzionale - ogni tasto premuto)
         view.getFilterPanel().getSearchField().getDocument().addDocumentListener(
                 new javax.swing.event.DocumentListener() {
                     @Override
@@ -114,28 +102,21 @@ public class MovieController{
     }
 
     private void executeCommand(Command command) {
-        command.execute();
-        commandHistory.push(command);
-        if (commandHistory.size() > MAX_HISTORY_SIZE) {
-            commandHistory.remove(0);
-        }
-        view.getUndoButton().setEnabled(true);
+        commandManager.executeCommand(command);
+        view.getUndoButton().setEnabled(commandManager.canUndo());
         autoSave();
         refreshView();
     }
 
     private void handleUndo() {
-        if (commandHistory.isEmpty()) {
-            return;
+        Command undoneCommand = commandManager.undo();
+
+        if (undoneCommand != null) {
+            view.showMessage("Annullato: " + undoneCommand.getDescription());
+            view.getUndoButton().setEnabled(commandManager.canUndo());
+            autoSave();
+            refreshView();
         }
-        Command command = commandHistory.pop();
-        command.undo();
-        view.showMessage("Annullato: " + command.getDescription());
-        if (commandHistory.isEmpty()) {
-            view.getUndoButton().setEnabled(false);
-        }
-        autoSave();
-        refreshView();
     }
 
     private void refreshView() {
@@ -179,10 +160,7 @@ public class MovieController{
         Movie.Memento beforeState = movieToEdit.createMemento();
 
         // Crea dialog in modalità EDIT
-        MovieFormDialog dialog = new MovieFormDialog(
-                (JFrame) SwingUtilities.getWindowAncestor(view),
-                movieToEdit
-        );
+        MovieFormDialog dialog = new MovieFormDialog(view.getParentFrame(),movieToEdit);
 
         // Mostra dialog e attendi input utente
         Movie editedMovie = dialog.showDialog();
@@ -223,78 +201,31 @@ public class MovieController{
 
     private void handleSave() {
         try {
-            // Chiedi il nome del file all'utente
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Salva Collezione");
+            String format = view.getSelectedFormat();
 
-            // Imposta filtro estensione in base al formato
-            String format = (String) view.getFormatComboBox().getSelectedItem();
-            if (format.equals("JSON")) {
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "File JSON (*.json)", "json"));
-            } else {
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "File CSV (*.csv)", "csv"));
-            }
+            String filepath = view.showSaveDialog(format, currentFilepath);
 
-            // Proponi nome file di default
-            fileChooser.setSelectedFile(new java.io.File(currentFilepath));
-
-            int result = fileChooser.showSaveDialog((JFrame) SwingUtilities.getWindowAncestor(view));
-
-            if (result == JFileChooser.APPROVE_OPTION) {
-                String filepath = fileChooser.getSelectedFile().getAbsolutePath();
-
-                // Rimuovi estensione se presente (verrà aggiunta dalla strategia)
-                if (filepath.endsWith(".json") || filepath.endsWith(".csv")) {
-                    filepath = filepath.substring(0, filepath.lastIndexOf('.'));
-                }
-
+            if (filepath != null) {
                 currentFilepath = filepath;
-
-                // Salva usando la strategia corrente
                 collection.save(filepath);
                 view.showMessage("Collezione salvata con successo in:\n" + filepath);
             }
 
         } catch (Exception e) {
             view.showError("Errore nel salvataggio: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
     private void handleLoad() {
         try {
-            // Chiedi il file all'utente
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Carica Collezione");
+            String format = view.getSelectedFormat();
 
-            // Imposta filtro estensione in base al formato
-            String format = (String) view.getFormatComboBox().getSelectedItem();
-            if (format.equals("JSON")) {
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "File JSON (*.json)", "json"));
-            } else {
-                fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "File CSV (*.csv)", "csv"));
-            }
+            String filepath = view.showLoadDialog(format);
 
-            int result = fileChooser.showOpenDialog((JFrame) SwingUtilities.getWindowAncestor(view));
-
-            if (result == JFileChooser.APPROVE_OPTION) {
-                String filepath = fileChooser.getSelectedFile().getAbsolutePath();
-
-                // Rimuovi estensione se presente
-                if (filepath.endsWith(".json") || filepath.endsWith(".csv")) {
-                    filepath = filepath.substring(0, filepath.lastIndexOf('.'));
-                }
-
+            if (filepath != null) {
                 currentFilepath = filepath;
-
-                // Carica usando la strategia corrente
                 collection.load(filepath);
 
-                // Pulisci filtri e aggiorna view
                 handleClearFilters();
                 refreshView();
 
@@ -304,7 +235,6 @@ public class MovieController{
 
         } catch (Exception e) {
             view.showError("Errore nel caricamento: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -362,7 +292,6 @@ public class MovieController{
             return;
         }
 
-        // Cambia strategia nella collezione (Strategy pattern in azione!)
         collection.setPersistenceStrategy(strategy);
 
         System.out.println("Strategia di persistenza cambiata in: " + selectedFormat);

@@ -1,5 +1,7 @@
 package com.parbonetti.gestorefilm.model;
 
+import com.parbonetti.gestorefilm.AppConfiguration;
+
 import java.util.UUID;
 
 public class Movie {
@@ -94,10 +96,10 @@ public class Movie {
         if (regista == null || regista.trim().isEmpty()) {
             throw new IllegalArgumentException("Il regista non può essere vuoto");
         }
-        if (annoUscita < 1888 || annoUscita > 2100) {
+        if (annoUscita < AppConfiguration.MIN_YEAR || annoUscita > AppConfiguration.MAX_YEAR) {
             throw new IllegalArgumentException("Anno non valido");
         }
-        if (valutazione < 1 || valutazione > 5) {
+        if (valutazione < AppConfiguration.MIN_RATING || valutazione > AppConfiguration.MAX_RATING) {
             throw new IllegalArgumentException("La valutazione deve essere tra 1 e 5");
         }
         if (statoVisione == null) {

@@ -24,6 +24,17 @@ public class Movie {
         validate();
     }
 
+    public Movie(String id, String regista, ViewingStatus statoVisione, int valutazione, String genere, int annoUscita, String titolo) {
+        this.id = id;
+        this.regista = regista;
+        this.statoVisione = statoVisione;
+        this.valutazione = valutazione;
+        this.genere = genere;
+        this.annoUscita = annoUscita;
+        this.titolo = titolo;
+        validate();
+    }
+
     public String getId() {
         return id;
     }

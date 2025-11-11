@@ -184,19 +184,16 @@ public class MovieController{
         if (movie == null) {
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(
-                view,
-                "Eliminare '" + movie.getTitolo() + "'?\n(Puoi ripristinare con Annulla/Ctrl+Z)",
-                "Conferma eliminazione",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
+        String confirmMessage = "Eliminare '" + movie.getTitolo() + "'?\n" +
+                "(Puoi ripristinare con Annulla/Ctrl+Z)";
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            Command command = new DeleteMovieCommand(collection, movie);
-            executeCommand(command);
-            view.showMessage("Film eliminato con successo! (Ctrl+Z per annullare)");
+        if (!view.showConfirmation(confirmMessage)) {
+            return;
         }
+
+        Command command = new DeleteMovieCommand(collection, movie);
+        executeCommand(command);
+        view.showMessage("Film eliminato con successo! (Ctrl+Z per annullare)");
     }
 
     private void handleSave() {
@@ -245,7 +242,6 @@ public class MovieController{
         ViewingStatus selectedStatus = view.getFilterPanel().getSelectedStatusEnum();
         int minRating = view.getFilterPanel().getSelectedMinRating();
 
-        // Parti da tutti i film
         List<Movie> filteredMovies = collection.getAllMovies();
 
         // Applica ricerca per titolo (se presente)

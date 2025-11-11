@@ -27,7 +27,6 @@ public class JSONPersistence implements PersistenceStrategy {
             throw new IllegalArgumentException("Il percorso non può essere null o vuoto");
         }
 
-        // Aggiungi estensione .json se manca
         if (!filepath.endsWith(".json")) {
             filepath += ".json";
         }
@@ -62,10 +61,9 @@ public class JSONPersistence implements PersistenceStrategy {
         }
 
         try (Reader reader = new FileReader(file)) {
-            // Definisci il tipo per la deserializzazione
+            // tipo per la deserializzazione
             Type movieListType = new TypeToken<ArrayList<Movie>>(){}.getType();
 
-            // Leggi JSON e converti in lista di Movie
             List<Movie> movies = gson.fromJson(reader, movieListType);
 
             if (movies == null) {

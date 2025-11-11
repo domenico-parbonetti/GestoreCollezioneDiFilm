@@ -24,7 +24,6 @@ public class CSVPersistence implements PersistenceStrategy {
             throw new IllegalArgumentException("Il percorso non può essere vuoto o null");
         }
 
-        // Aggiungi estensione .csv se manca
         if (!filepath.endsWith(".csv")) {
             filepath += ".csv";
         }

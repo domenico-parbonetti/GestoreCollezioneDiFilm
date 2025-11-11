@@ -21,7 +21,7 @@ public final class AppConfiguration {
 
     public static final int MAX_RATING = 5;
 
-    public static final int MIN_YEAR = 1888; // First film ever made
+    public static final int MIN_YEAR = 1888;
 
     public static final int MAX_YEAR = java.time.Year.now().getValue() + 5;
 }

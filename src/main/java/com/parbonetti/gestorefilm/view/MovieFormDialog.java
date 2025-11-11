@@ -41,18 +41,15 @@ public class MovieFormDialog extends JDialog {
     }
 
     private void initializeComponents() {
-        // Campo titolo
         titoloField = new JTextField(30);
 
-        // Campo regista
         registaField = new JTextField(30);
 
-        // Spinner anno (da 1888 - primo film - a anno corrente + 5)
         int currentYear = java.time.Year.now().getValue();
         SpinnerNumberModel yearModel = new SpinnerNumberModel(
-                currentYear,  // valore iniziale
-                1888,         // minimo
-                currentYear + 5,  // massimo
+                currentYear,
+                1888,
+                currentYear + 5,
                 1             // step
         );
         annoSpinner = new JSpinner(yearModel);
@@ -182,7 +179,6 @@ public class MovieFormDialog extends JDialog {
         buttonPanel.add(saveButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Label nota campi obbligatori
         JLabel noteLabel = new JLabel("* Campi obbligatori");
         noteLabel.setFont(noteLabel.getFont().deriveFont(Font.ITALIC, 11f));
         noteLabel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20));
@@ -197,10 +193,8 @@ public class MovieFormDialog extends JDialog {
             valutazioneLabel.setText(value + "/5 " + stars);
         });
 
-        // Listener bottone Salva
         saveButton.addActionListener(e -> handleSave());
 
-        // Listener bottone Annulla
         cancelButton.addActionListener(e -> handleCancel());
 
         // Enter su text field = salva
@@ -230,7 +224,6 @@ public class MovieFormDialog extends JDialog {
     }
 
     private boolean validateInput() {
-        // Valida titolo
         if (titoloField.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Il titolo è obbligatorio!",
@@ -240,7 +233,6 @@ public class MovieFormDialog extends JDialog {
             return false;
         }
 
-        // Valida regista
         if (registaField.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Il regista è obbligatorio!",
@@ -259,14 +251,12 @@ public class MovieFormDialog extends JDialog {
         }
 
         try {
-            // Raccogli dati dal form
             String titolo = titoloField.getText().trim();
             String regista = registaField.getText().trim();
             int anno = (Integer) annoSpinner.getValue();
             String genere = (String) genreComboBox.getSelectedItem();
             int valutazione = valutazioneSlider.getValue();
 
-            // Converti display name in enum
             String statusDisplay = (String) statusComboBox.getSelectedItem();
             ViewingStatus status = null;
             for (ViewingStatus vs : ViewingStatus.values()) {
@@ -316,7 +306,7 @@ public class MovieFormDialog extends JDialog {
     }
 
     public Movie showDialog() {
-        setVisible(true); // Blocca finché non chiuso (modal)
+        setVisible(true);
         return isConfirmed() ? movie : null;
     }
 }

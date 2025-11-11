@@ -5,17 +5,13 @@ import com.parbonetti.gestorefilm.view.MainView;
 
 import javax.swing.*;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        // Usa SwingUtilities per garantire thread-safety della GUI
         SwingUtilities.invokeLater(() -> {
             try {
                 // Imposta Look and Feel nativo del sistema operativo
                 setSystemLookAndFeel();
 
-                // Inizializza e avvia l'applicazione
                 initializeApplication();
 
             } catch (Exception e) {
@@ -53,11 +49,9 @@ public class Main {
         System.out.println("- Creazione View...");
         MainView view = new MainView();
 
-        // 2. Crea il Controller (collega automaticamente View e Model)
         System.out.println("- Creazione Controller...");
         MovieController controller = new MovieController(view);
 
-        // 3. Mostra la finestra principale
         System.out.println("- Visualizzazione GUI...");
         view.display();
 
